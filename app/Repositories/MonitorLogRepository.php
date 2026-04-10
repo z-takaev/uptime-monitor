@@ -6,6 +6,7 @@ use App\DTO\MonitorLogDTO;
 use App\Enums\CheckStatus;
 use App\Models\Monitor;
 use App\Models\MonitorLog;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class MonitorLogRepository
 {
@@ -32,5 +33,12 @@ class MonitorLogRepository
             ->where('status', $status)
             ->latest('checked_at')
             ->first();
+    }
+
+    public function getPaginatedForMonitor(Monitor $monitor, int $perPage = 20): LengthAwarePaginator
+    {
+        return $monitor->monitorLogs()
+            ->latest('checked_at')
+            ->paginate($perPage);
     }
 }

@@ -13,5 +13,8 @@ Route::prefix('v1')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('monitors', MonitorController::class);
+
+        Route::get('monitors/{monitor}/history', [MonitorController::class, 'history']);
+        Route::get('monitors/{monitor}/stats', [MonitorController::class, 'stats']);
     });
 });

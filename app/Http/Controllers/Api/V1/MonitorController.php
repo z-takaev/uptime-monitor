@@ -7,9 +7,12 @@ namespace App\Http\Controllers\Api\V1;
 use App\DTO\MonitorDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MonitorRequest;
+use App\Http\Resources\MonitorLogResource;
 use App\Http\Resources\MonitorResource;
+use App\Repositories\MonitorLogRepository;
 use App\Repositories\MonitorRepository;
 use App\Services\MonitorService;
+use App\Services\StatsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -18,7 +21,9 @@ final class MonitorController extends Controller
 {
     public function __construct(
         private readonly MonitorService $service,
+        private readonly StatsService $statsService,
         private readonly MonitorRepository $repository,
+        private readonly MonitorLogRepository $logRepository,
     ) {}
 
     public function index(Request $request): AnonymousResourceCollection
@@ -78,5 +83,38 @@ final class MonitorController extends Controller
         $this->service->delete($monitor);
 
         return response()->json(['message' => 'Monitor deleted'], 200);
+    }
+
+    public function history(Request $request, int $monitor): JsonResponse
+    {
+        $monitorModel = $this->repository->findForUser($monitor, $request->user()->id);
+
+        if (! $monitorModel) {
+            return response()->json(['message' => 'Monitor not found'], 404);
+        }
+
+        $logs = $this->logRepository->getPaginatedForMonitor(
+            $monitorModel,
+            (int) $request->query('per_page', 20),
+        );
+
+        return response()->json(
+            MonitorLogResource::collection($logs)->response()->getData(true)
+        );
+    }
+
+    public function stats(Request $request, int $monitor): JsonResponse
+    {
+        $monitorModel = $this->repository->findForUser($monitor, $request->user()->id);
+
+        if (! $monitorModel) {
+            return response()->json(['message' => 'Monitor not found'], 404);
+        }
+
+        $stats = $this->statsService->getStats($monitorModel);
+
+        return response()->json([
+            'data' => $this->statsService->getStats($monitorModel),
+        ]);
     }
 }
