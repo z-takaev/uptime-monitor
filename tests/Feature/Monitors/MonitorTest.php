@@ -6,8 +6,6 @@ use App\Models\Monitor;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 
-// ───── Index ─────
-
 it('returns list of monitors for authenticated user', function (): void {
     $user = User::factory()->create();
     Monitor::factory()->count(3)->for($user)->create();
@@ -35,8 +33,6 @@ it('returns only own monitors', function (): void {
 it('returns 401 if not authenticated', function (): void {
     $this->getJson('/api/v1/monitors')->assertStatus(401);
 });
-
-// ───── Store ─────
 
 it('creates a monitor', function (): void {
     $user = User::factory()->create();
@@ -76,12 +72,10 @@ it('returns 422 if interval is invalid', function (): void {
     $this->postJson('/api/v1/monitors', [
         'name' => 'Google',
         'url' => 'https://google.com',
-        'interval' => 7, // недопустимое значение
+        'interval' => 7,
     ])->assertStatus(422)
         ->assertJsonValidationErrors(['interval']);
 });
-
-// ───── Show ─────
 
 it('returns a monitor', function (): void {
     $user = User::factory()->create();
@@ -102,8 +96,6 @@ it('returns 404 for another users monitor', function (): void {
     $this->getJson("/api/v1/monitors/{$monitor->id}")
         ->assertStatus(404);
 });
-
-// ───── Update ─────
 
 it('updates a monitor', function (): void {
     $user = User::factory()->create();
@@ -131,8 +123,6 @@ it('returns 404 when updating another users monitor', function (): void {
         'interval' => 5,
     ])->assertStatus(404);
 });
-
-// ───── Destroy ─────
 
 it('deletes a monitor', function (): void {
     $user = User::factory()->create();

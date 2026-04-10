@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('url');
             $table->unsignedTinyInteger('interval')->default(5); // TODO: Заменить на enum
             $table->boolean('is_active')->default(true);
+            $table->timestamp('last_checked_at')->nullable();
         });
     }
 
