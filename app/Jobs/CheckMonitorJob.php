@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\DTO\MonitorLogDTO;
 use App\Enums\CheckStatus;
 use App\Events\SiteDownEvent;
 use App\Events\SiteRestoredEvent;
@@ -44,22 +45,33 @@ final class CheckMonitorJob implements ShouldQueue
             $responseTimeMs = (int) ((microtime(true) - $startTime) * 1000);
             $isUp = $response->successful();
 
-            $monitorLog = $repository->create($this->monitor, [
-                'status' => $isUp ? CheckStatus::Up : CheckStatus::Down,
-                'response_code' => $response->status(),
-                'response_time_ms' => $responseTimeMs,
-                'checked_at' => now(),
-            ]);
+            $logDTO = new MonitorLogDTO(
+                status: CheckStatus::Up,
+                response_code: $response->status(),
+                response_time_ms: $responseTimeMs,
+                checked_at: now(),
+            );
+
+            $monitorLogDto = new MonitorLogDTO(
+                status : $isUp ? CheckStatus::Up : CheckStatus::Down,
+                response_code : $response->status(),
+                response_time_ms : $responseTimeMs,
+                checked_at : now(),
+            );
+
+            $monitorLog = $repository->create($this->monitor, $monitorLogDto);
 
         } catch (Exception $e) {
             $responseTimeMs = (int) ((microtime(true) - $startTime) * 1000);
 
-            $monitorLog = $repository->create($this->monitor, [
-                'status' => CheckStatus::Down,
-                'response_code' => null,
-                'response_time_ms' => $responseTimeMs,
-                'checked_at' => now(),
-            ]);
+            $monitorLogDto = new MonitorLogDTO(
+                status : CheckStatus::Down,
+                response_code : null,
+                response_time_ms : $responseTimeMs,
+                checked_at : now(),
+            );
+
+            $monitorLog = $repository->create($this->monitor, $monitorLogDto);
         }
 
         $this->dispatchEvents($monitorLog->status, $previousLog);

@@ -77,8 +77,6 @@ it('updates last_checked_at on monitor after check', function (): void {
         'last_checked_at' => null,
     ]);
 
-    // last_checked_at обновляется в Scheduler до диспатча
-    // здесь проверяем что лог создался
     (new CheckMonitorJob($monitor))->handle(
         app(MonitorLogRepository::class)
     );
@@ -94,7 +92,6 @@ it('dispatches SiteDownEvent when site goes down', function (): void {
 
     $monitor = Monitor::factory()->for(User::factory())->create();
 
-    // Создаём предыдущий лог со статусом UP
     MonitorLog::factory()->for($monitor)->create([
         'status' => CheckStatus::Up,
         'checked_at' => now()->subMinute(),
@@ -113,7 +110,6 @@ it('dispatches SiteRestoredEvent when site comes back up', function (): void {
 
     $monitor = Monitor::factory()->for(User::factory())->create();
 
-    // Создаём предыдущий лог со статусом DOWN
     MonitorLog::factory()->for($monitor)->create([
         'status' => CheckStatus::Down,
         'checked_at' => now()->subMinute(),
@@ -132,7 +128,6 @@ it('does not dispatch events when status has not changed', function (): void {
 
     $monitor = Monitor::factory()->for(User::factory())->create();
 
-    // Предыдущий лог тоже UP
     MonitorLog::factory()->for($monitor)->create([
         'status' => CheckStatus::Up,
         'checked_at' => now()->subMinute(),

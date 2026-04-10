@@ -2,15 +2,21 @@
 
 namespace App\Repositories;
 
+use App\DTO\MonitorLogDTO;
 use App\Enums\CheckStatus;
 use App\Models\Monitor;
 use App\Models\MonitorLog;
 
 class MonitorLogRepository
 {
-    public function create(Monitor $monitor, array $data): MonitorLog
+    public function create(Monitor $monitor, MonitorLogDTO $dto): MonitorLog
     {
-        return $monitor->monitorLogs()->create($data);
+        return $monitor->monitorLogs()->create([
+            'status' => $dto->status,
+            'response_code' => $dto->response_code,
+            'response_time_ms' => $dto->response_time_ms,
+            'checked_at' => $dto->checked_at,
+        ]);
     }
 
     public function getLatest(Monitor $monitor): ?MonitorLog
